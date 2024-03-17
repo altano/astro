@@ -1,0 +1,40 @@
+import { defineMiddleware, sequence } from 'astro:middleware';
+import { promises as fs } from 'node:fs';
+
+const first = defineMiddleware(async (context, next) => {
+	if (context.request.url.includes('/placeholder.png')) {
+		const buffer = await fs.readFile('./test/fixtures/non-html-pages/src/images/placeholder.png');
+		return new Response(buffer.buffer, {
+			headers: {
+				"Content-Type": "image/png",
+				"Content-Disposition": `inline; filename="placeholder.png"`,
+			},
+		});
+	} else if (context.request.url.includes('/rename-me.json')) {
+		const content = JSON.stringify({name: "alan"})
+		return new Response(content, {
+			headers: {
+				"Content-Type": "application/json",
+				"Content-Disposition": `inline; filename="data.json"`,
+			},
+		});
+	}
+
+	return next();
+});
+
+// const debugging = defineMiddleware(async (context, next) => {
+// 	const response = await next();
+// 	console.log(`Response for ${context.request.url}`)
+// 	console.log(`status: ${response.status}`)
+// 	console.log(`ok: ${response.ok}`)
+// 	if (response.ok) {
+// 		console.log(`body: ${response.body.toString('utf-8')}`)
+// 	}
+// 	return response;
+// });
+
+export const onRequest = sequence(
+	// debugging,
+	first
+);

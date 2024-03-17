@@ -14,6 +14,9 @@ package-lock.json
 .turbo/
 .eslintcache
 .pnpm-store
+.envrc
+devbox.json
+devbox.lock
 
 # ignore top-level vscode settings
 /.vscode/settings.json
