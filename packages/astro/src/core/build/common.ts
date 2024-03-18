@@ -36,7 +36,6 @@ export function getOutFolder(
 				if (pathname === '' || routeData.isIndex) {
 					throw new Error(`Root must be html`);
 				}
-				// @TODO factor in fileDescriptor.filepath
 				const dirname = npath.dirname(pathname);
 				const result = new URL('.' + appendForwardSlash(dirname), outRoot);
 
@@ -86,8 +85,7 @@ export function getOutFile(
 		case 'redirect':
 			// @TODO Document when we disregard build.format
 			if (fileDescriptor?.isHtml === false) {
-				// @TODO factor in fileDescriptor.filepath
-				let baseName = npath.basename(pathname);
+				let baseName = fileDescriptor.filename ? fileDescriptor.filename : npath.basename(pathname);
 				// If there is no base name this is the root route.
 				// If this is an index route, the name should be `index.html`.
 				if (!baseName || routeData.isIndex) {

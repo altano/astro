@@ -1,7 +1,7 @@
 import type { Rollup } from 'vite';
 import type { AstroConfig } from '../../@types/astro.js';
 import type { ViteBuildReturn } from './types.js';
-import { Headers } from './headers.js';
+import { ContentHeaders } from './contentHeaders.js';
 
 export function getTimeStat(timeStart: number, timeEnd: number) {
 	const buildTime = timeEnd - timeStart;
@@ -70,21 +70,18 @@ export function viteBuildReturnToRollupOutputs(
 }
 
 export type FileDescriptor = {
-	filepath: string | undefined;
-	encoding: BufferEncoding | undefined;
 	isHtml: boolean;
+	filename: string | undefined;
+	encoding: BufferEncoding | undefined;
 };
 
 export function getFileDescriptorFromResponse(response: Response): FileDescriptor {
-	const headers = new Headers(response.headers);
-
-	const encoding = isBufferEncoding(headers.charset) ? headers.charset : undefined;
-	const isHtml = headers.mediaType == null || headers.mediaType === 'text/html';
+	const headers = new ContentHeaders(response.headers);
 
 	return {
-		encoding,
-		isHtml,
-		filepath: undefined, // @TODO
+		isHtml: headers.mediaType == null || headers.mediaType === 'text/html',
+		filename: headers.filename,
+		encoding: isBufferEncoding(headers.charset) ? headers.charset : undefined,
 	};
 }
 

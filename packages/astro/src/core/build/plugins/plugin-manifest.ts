@@ -176,10 +176,19 @@ function buildManifest(
 		if (!route.pathname) continue;
 
 		debugger;
-		// @TODO need to get response here
-
-		const outFolder = getOutFolder(opts.settings.config, route.pathname, route);
-		const outFile = getOutFile(opts.settings.config, outFolder, route.pathname, route);
+		// @TODO route.distURL isn't set yet so this doesn't work. But it
+		// theoretically would! Note that we also can't construct the file name on
+		// demand here even if we wanted to, because without the whole build
+		// pipeline, we can't know the Response, or the Response headers, or any
+		// potential rewrites from middelware.
+		const outFile = route.distURL
+			? route.distURL
+			: getOutFile(
+					opts.settings.config,
+					getOutFolder(opts.settings.config, route.pathname, route),
+					route.pathname,
+					route
+				);
 		const file = outFile.toString().replace(opts.settings.config.build.client.toString(), '');
 		routes.push({
 			file,

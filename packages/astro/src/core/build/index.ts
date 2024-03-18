@@ -197,6 +197,8 @@ class AstroBuilder {
 		};
 
 		const { internals, ssrOutputChunkNames } = await viteBuild(opts);
+		// ^^^^ The manifest is already generated
+		// But we're just now about to discover middleware rewrites:
 		await staticBuild(opts, internals, ssrOutputChunkNames);
 
 		// Write any additionally generated assets to disk.
