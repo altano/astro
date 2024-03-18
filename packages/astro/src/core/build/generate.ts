@@ -60,7 +60,7 @@ import type {
 	StaticBuildOptions,
 	StylesheetAsset,
 } from './types.js';
-import { getTimeStat, shouldAppendForwardSlash } from './util.js';
+import { getFileDescriptorFromResponse, getTimeStat, shouldAppendForwardSlash } from './util.js';
 
 function createEntryURL(filePath: string, outFolder: URL) {
 	return new URL('./' + filePath + `?time=${Date.now()}`, outFolder);
@@ -555,12 +555,16 @@ async function generatePath(
 		body = Buffer.from(await response.arrayBuffer());
 	}
 
-	const outFolder = getOutFolder(config, pathname, route);
-	const outFile = getOutFile(config, outFolder, pathname, route);
+	debugger;
+
+	const fileDescriptor = getFileDescriptorFromResponse(response);
+
+	const outFolder = getOutFolder(config, pathname, route, fileDescriptor);
+	const outFile = getOutFile(config, outFolder, pathname, route, fileDescriptor);
 	route.distURL = outFile;
 
 	await fs.promises.mkdir(outFolder, { recursive: true });
-	await fs.promises.writeFile(outFile, body);
+	await fs.promises.writeFile(outFile, body, fileDescriptor.encoding);
 }
 
 function getPrettyRouteName(route: RouteData): string {

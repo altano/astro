@@ -2,6 +2,7 @@ import npath from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AstroConfig, RouteData } from '../../@types/astro.js';
 import { appendForwardSlash } from '../../core/path.js';
+import type { FileDescriptor } from './util.js';
 
 const STATUS_CODE_PAGES = new Set(['/404', '/500']);
 const FALLBACK_OUT_DIR_NAME = './.astro/';
@@ -17,7 +18,8 @@ function getOutRoot(astroConfig: AstroConfig): URL {
 export function getOutFolder(
 	astroConfig: AstroConfig,
 	pathname: string,
-	routeData: RouteData
+	routeData: RouteData,
+	fileDescriptor: FileDescriptor | null = null
 ): URL {
 	const outRoot = getOutRoot(astroConfig);
 	const routeType = routeData.type;
@@ -29,6 +31,19 @@ export function getOutFolder(
 		case 'fallback':
 		case 'page':
 		case 'redirect':
+			// @TODO Document when we disregard build.format
+			if (fileDescriptor?.isHtml === false) {
+				if (pathname === '' || routeData.isIndex) {
+					throw new Error(`Root must be html`);
+				}
+				// @TODO factor in fileDescriptor.filepath
+				const dirname = npath.dirname(pathname);
+				const result = new URL('.' + appendForwardSlash(dirname), outRoot);
+
+				debugger;
+
+				return result;
+			}
 			switch (astroConfig.build.format) {
 				case 'directory': {
 					if (STATUS_CODE_PAGES.has(pathname)) {
@@ -59,7 +74,8 @@ export function getOutFile(
 	astroConfig: AstroConfig,
 	outFolder: URL,
 	pathname: string,
-	routeData: RouteData
+	routeData: RouteData,
+	fileDescriptor: FileDescriptor | null = null
 ): URL {
 	const routeType = routeData.type;
 	switch (routeType) {
@@ -68,6 +84,21 @@ export function getOutFile(
 		case 'page':
 		case 'fallback':
 		case 'redirect':
+			// @TODO Document when we disregard build.format
+			if (fileDescriptor?.isHtml === false) {
+				// @TODO factor in fileDescriptor.filepath
+				let baseName = npath.basename(pathname);
+				// If there is no base name this is the root route.
+				// If this is an index route, the name should be `index.html`.
+				if (!baseName || routeData.isIndex) {
+					throw new Error(`Root must be html`);
+				}
+				const result = new URL(`./${baseName}`, outFolder);
+
+				debugger;
+
+				return result;
+			}
 			switch (astroConfig.build.format) {
 				case 'directory': {
 					if (STATUS_CODE_PAGES.has(pathname)) {
